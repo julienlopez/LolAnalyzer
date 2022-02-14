@@ -17,8 +17,11 @@ int wmain(int argc, wchar_t* argv[])
     LolApi api(std::wstring{argv[1]});
     auto task = api.requestSummonerByName(U("euw1"), U("Haraelendil"))
                     .then_map([](const Summoner& summoner) { return summoner.puuid(); })
-                    .and_then([&api](const utility::string_t& summoner_puuid)
-                              { return api.requestMatchlist(U("europe"), summoner_puuid); })
+                    .and_then(
+                        [&api](const utility::string_t& summoner_puuid) {
+                            return api.requestMatchlist(U("europe"), summoner_puuid,
+                                                        {.type = utility::string_t{U("ranked")}, .count = 100});
+                        })
                     .then_map(
                         [](const std::vector<utility::string_t>& matches)
                         {

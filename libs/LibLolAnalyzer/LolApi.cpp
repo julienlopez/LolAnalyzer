@@ -29,9 +29,9 @@ namespace
     }
 
     LibRest::ExpectedTask<web::json::value>
-    requestAPI(const std::wstring& region, const std::wstring& request, const std::wstring& api_key,
-               const std::wstring& option = {}, const std::wstring prefix_region = {},
-               const std::map<std::wstring, std::wstring>& additional_parameters = {})
+    requestAPI(const utility::string_t& region, const utility::string_t& request, const utility::string_t& api_key,
+               const utility::string_t& option = {}, const utility::string_t prefix_region = {},
+               const std::map<utility::string_t, utility::string_t>& additional_parameters = {})
     {
         return expected_task::create_task<utility::string_t>(
                    [=]()
@@ -49,23 +49,39 @@ namespace
                    })
             .and_then(LibRest::Utils::extractJson());
     }
+
+    std::map<utility::string_t, utility::string_t> toparams(const LolApi::MatchListOptions& options)
+    {
+        std::map<utility::string_t, utility::string_t> params;
+        if(options.type) params[U("type")] = *options.type;
+        if(options.start) params[U("start")] = std::to_wstring(*options.start);
+        if(options.count) params[U("count")] = std::to_wstring(*options.count);
+        if(options.start_time) params[U("startTime")] = std::to_wstring(*options.start_time);
+        if(options.end_time) params[U("endTime")] = std::to_wstring(*options.end_time);
+        if(options.queue) params[U("queue")] = std::to_wstring(*options.queue);
+        return params;
+    }
+
 } // namespace
 
-LolApi::LolApi(std::wstring api_key)
+LolApi::LolApi(utility::string_t api_key)
     : m_api_key(std::move(api_key))
 {
 }
 
-LibRest::ExpectedTask<Summoner> LolApi::requestSummonerByName(const std::wstring& region,
-                                                              const std::wstring& summoner_name) const
+LibRest::ExpectedTask<Summoner> LolApi::requestSummonerByName(const utility::string_t& region,
+                                                              const utility::string_t& summoner_name) const
 {
     return requestAPI(region, U("/summoner/v4/summoners/by-name/") + summoner_name, m_api_key).and_then(&parseSummoner);
 }
 
-LibRest::ExpectedTask<std::vector<utility::string_t>>
-LolApi::requestMatchlist(const std::wstring& region, const utility::string_t& summoner_puuid) const
+LibRest::ExpectedTask<std::vector<utility::string_t>> LolApi::requestMatchlist(const utility::string_t& region,
+                                                                               const utility::string_t& summoner_puuid,
+                                                                               const MatchListOptions& options) const
 {
-    return requestAPI(region, U("/match/v5/matches/by-puuid/") + summoner_puuid + U("/ids"), m_api_key)
+
+    return requestAPI(region, U("/match/v5/matches/by-puuid/") + summoner_puuid + U("/ids"), m_api_key, {}, {},
+                      toparams(options))
         .and_then(&parseMatchList);
 }
 

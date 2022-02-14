@@ -4,6 +4,10 @@
 
 #include "summoner.hpp"
 
+#include <utility>
+
+#include <boost/optional.hpp>
+
 #include <cpprest/json.h>
 
 namespace LibLolAnalyzer
@@ -11,8 +15,17 @@ namespace LibLolAnalyzer
 
 class LolApi
 {
-
 public:
+    struct MatchListOptions
+    {
+        boost::optional<utility::string_t> type;
+        boost::optional<std::size_t> start;
+        boost::optional<std::size_t> count;
+        boost::optional<std::size_t> start_time;
+        boost::optional<std::size_t> end_time;
+        boost::optional<std::size_t> queue;
+    };
+
     LolApi(utility::string_t api_key);
 
     ~LolApi() = default;
@@ -21,7 +34,8 @@ public:
                                                           const utility::string_t& summoner_name) const;
 
     LibRest::ExpectedTask<std::vector<utility::string_t>> requestMatchlist(const utility::string_t& region,
-                                                                           const utility::string_t& summoner_id) const;
+                                                                           const utility::string_t& summoner_id,
+                                                                           const MatchListOptions& options = {}) const;
 
 private:
     const utility::string_t m_api_key;
