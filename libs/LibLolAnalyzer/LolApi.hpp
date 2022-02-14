@@ -13,9 +13,6 @@ class LolApi
 {
 
 public:
-    static const utility::string_t s_summoner_api_version;
-    static const utility::string_t s_static_data_api_version;
-
     LolApi(utility::string_t api_key);
 
     ~LolApi() = default;

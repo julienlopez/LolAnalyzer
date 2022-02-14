@@ -34,7 +34,6 @@ namespace
                        auto url = U("https://") + (prefix_region.empty() ? region : prefix_region)
                                   + U(".api.riotgames.com/lol/");
                        if(!option.empty()) url += option + U("/");
-                       std::wcout << url << std::endl;
                        web::http::client::http_client client(url);
                        web::uri_builder builder(request);
                        builder.append_query(U("api_key"), api_key);
@@ -46,9 +45,6 @@ namespace
             .and_then(LibRest::Utils::extractJson());
     }
 } // namespace
-
-const std::wstring LolApi::s_summoner_api_version = L"v1.4";
-const std::wstring LolApi::s_static_data_api_version = L"v1.2";
 
 LolApi::LolApi(std::wstring api_key)
     : m_api_key(std::move(api_key))
