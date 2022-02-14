@@ -28,6 +28,11 @@ public:
 
     LolApi(utility::string_t api_key);
 
+    LolApi(const LolApi&) = delete;
+    LolApi(LolApi&&) = delete;
+
+    LolApi& operator=(const LolApi&) = delete;
+    LolApi& operator=(LolApi&&) = delete;
     ~LolApi() = default;
 
     LibRest::ExpectedTask<Summoner> requestSummonerByName(const utility::string_t& region,
