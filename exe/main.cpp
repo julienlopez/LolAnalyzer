@@ -2,6 +2,8 @@
 
 #include <LolApi.hpp>
 
+#include <expected_task/when_all.hpp>
+
 using LibLolAnalyzer::LolApi;
 using LibLolAnalyzer::Summoner;
 
@@ -20,14 +22,15 @@ int wmain(int argc, wchar_t* argv[])
                     .and_then(
                         [&api](const utility::string_t& summoner_puuid) {
                             return api.requestMatchlist(U("europe"), summoner_puuid,
-                                                        {.type = utility::string_t{U("ranked")}, .count = 100});
+                                                        {.type = utility::string_t{U("ranked")}, .count = 2});
                         })
-                    .then_map(
-                        [](const std::vector<utility::string_t>& matches)
+                    .and_then(
+                        [&api](const std::vector<utility::string_t>& matches)
                         {
-                            for(const auto& match : matches)
-                                ucout << match << std::endl;
-                            return matches;
+                            std::vector<expected_task::expected_task<LolApi::Match>> tasks;
+                            for(const auto match : matches)
+                                tasks.push_back(api.requestMatch(U("europe"), match));
+                            return expected_task::when_all(tasks);
                         })
                     .or_else([](const utility::string_t& error) { std::wcout << L"Error : " << error << std::endl; });
 
