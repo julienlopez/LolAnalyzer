@@ -20,8 +20,8 @@ public:
     LibRest::ExpectedTask<Summoner> requestSummonerByName(const utility::string_t& region,
                                                           const utility::string_t& summoner_name) const;
 
-    LibRest::ExpectedTask<web::json::value> requestMatchlist(const utility::string_t& region,
-                                                             const utility::string_t& summoner_id) const;
+    LibRest::ExpectedTask<std::vector<utility::string_t>> requestMatchlist(const utility::string_t& region,
+                                                                           const utility::string_t& summoner_id) const;
 
 private:
     const utility::string_t m_api_key;

@@ -23,6 +23,11 @@ namespace
             .map(LibRest::Algorithms::applyToTuple(boost::hof::construct<Summoner>()));
     }
 
+    LibRest::Result<std::vector<utility::string_t>> parseMatchList(const web::json::value& value)
+    {
+        return LibRest::JsonParser::parseArray<utility::string_t>(value);
+    }
+
     LibRest::ExpectedTask<web::json::value>
     requestAPI(const std::wstring& region, const std::wstring& request, const std::wstring& api_key,
                const std::wstring& option = {}, const std::wstring prefix_region = {},
@@ -54,14 +59,14 @@ LolApi::LolApi(std::wstring api_key)
 LibRest::ExpectedTask<Summoner> LolApi::requestSummonerByName(const std::wstring& region,
                                                               const std::wstring& summoner_name) const
 {
-    return requestAPI(region, U("/summoner/v4/summoners/by-name/") + summoner_name, m_api_key)
-        .and_then(&parseSummoner);
+    return requestAPI(region, U("/summoner/v4/summoners/by-name/") + summoner_name, m_api_key).and_then(&parseSummoner);
 }
 
-LibRest::ExpectedTask<web::json::value> LolApi::requestMatchlist(const std::wstring& region,
-                                                                 const utility::string_t& summoner_puuid) const
+LibRest::ExpectedTask<std::vector<utility::string_t>>
+LolApi::requestMatchlist(const std::wstring& region, const utility::string_t& summoner_puuid) const
 {
-    return requestAPI(region, U("/match/v5/matches/by-puuid/") + summoner_puuid + U("/ids"), m_api_key);
+    return requestAPI(region, U("/match/v5/matches/by-puuid/") + summoner_puuid + U("/ids"), m_api_key)
+        .and_then(&parseMatchList);
 }
 
 } // namespace LibLolAnalyzer

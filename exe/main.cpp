@@ -16,19 +16,15 @@ int wmain(int argc, wchar_t* argv[])
 
     LolApi api(std::wstring{argv[1]});
     auto task = api.requestSummonerByName(U("euw1"), U("Haraelendil"))
-                    .then_map(
-                        [](Summoner summoner)
-                        {
-                            ucout << summoner.id() << " : " << summoner.name() << std::endl;
-                            return summoner.puuid();
-                        })
+                    .then_map([](const Summoner& summoner) { return summoner.puuid(); })
                     .and_then([&api](const utility::string_t& summoner_puuid)
                               { return api.requestMatchlist(U("europe"), summoner_puuid); })
                     .then_map(
-                        [](const web::json::value json)
+                        [](const std::vector<utility::string_t>& matches)
                         {
-                            ucout << json << std::endl;
-                            return json;
+                            for(const auto& match : matches)
+                                ucout << match << std::endl;
+                            return matches;
                         })
                     .or_else([](const utility::string_t& error) { std::wcout << L"Error : " << error << std::endl; });
 
