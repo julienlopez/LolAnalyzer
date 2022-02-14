@@ -1,0 +1,6 @@
+[submodule "3rd_party/higherorderfunctions"]
+	path = 3rd_party/higherorderfunctions
+	url = https://github.com/pfultz2/higherorderfunctions
+[submodule "3rd_party/expected_task"]
+	path = 3rd_party/expected_task
+	url = https://github.com/julienlopez/expected_task
