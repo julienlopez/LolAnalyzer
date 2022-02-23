@@ -8,6 +8,33 @@
 
 #include <cpprest/http_client.h>
 
+namespace LibRest::JsonParser
+{
+
+template <>
+LibRest::Result<LibLolAnalyzer::LolApi::Match::Participant> inline cast<LibLolAnalyzer::LolApi::Match::Participant>(
+    const web::json::value& value)
+{
+    return LibRest::JsonParser::parseSimpleObject<std::size_t, std::size_t, std::size_t, utility::string_t,
+                                                  utility::string_t, std::size_t, utility::string_t,
+                                                  utility::string_t, std::size_t, std::size_t, std::size_t, std::size_t,
+                                                  std::size_t, std::size_t, std::size_t, std::size_t, std::size_t>(
+               value, U("kills"), U("assists"), U("deaths"), U("lane"), U("summonerId"), U("championId"),
+               U("championName"), U("teamPosition"), U("goldEarned"), U("totalDamageDealt"),
+               U("totalDamageDealtToChampions"), U("totalDamageTaken"), U("totalMinionsKilled"), U("visionScore"),
+               U("visionWardsBoughtInGame"), U("wardsKilled"), U("wardsPlaced"))
+        .map(LibRest::Algorithms::applyToTuple(boost::hof::construct<LibLolAnalyzer::LolApi::Match::Participant>()));
+}
+
+template <>
+LibRest::Result<std::vector<LibLolAnalyzer::LolApi::Match::Participant>> inline cast<
+    std::vector<LibLolAnalyzer::LolApi::Match::Participant>>(const web::json::value& value)
+{
+    return parseArray<LibLolAnalyzer::LolApi::Match::Participant>(value);
+}
+
+} // namespace LibRest::JsonParser
+
 namespace LibLolAnalyzer
 {
 
@@ -64,10 +91,9 @@ namespace
 
     LibRest::Result<LolApi::Match> parseMatchInfo(const web::json::value& value)
     {
-        ucout << U("parseMatchInfo(") << value << U(")\n\n");
-
-        return LibRest::JsonParser::parseSimpleObject<std::size_t, std::size_t, std::size_t, std::size_t>(
-                   value, U("gameCreation"), U("gameDuration"), U("gameEndTimestamp"), U("gameId"))
+        return LibRest::JsonParser::parseSimpleObject<std::size_t, std::size_t, std::size_t, std::size_t,
+                                                      std::vector<LolApi::Match::Participant>>(
+                   value, U("gameCreation"), U("gameDuration"), U("gameEndTimestamp"), U("gameId"), U("participants"))
             .map(LibRest::Algorithms::applyToTuple(boost::hof::construct<LolApi::Match>()));
     }
 
@@ -82,12 +108,43 @@ namespace
 
 } // namespace
 
+LolApi::Match::Participant::Participant(const std::size_t kills_, const std::size_t assists_, const std::size_t deaths_,
+                                        utility::string_t lane_, utility::string_t summoner_id_,
+                                        std::size_t champion_id_, utility::string_t champion_name_,
+                                        utility::string_t team_position_, const std::size_t gold_earned_,
+                                        const std::size_t total_damage_dealt_,
+                                        const std::size_t total_damage_dealt_to_champions_,
+                                        const std::size_t total_damage_taken_, const std::size_t total_minions_killed_,
+                                        const std::size_t vision_score_, const std::size_t vision_wards_bought_in_game_,
+                                        const std::size_t wards_killed_, const std::size_t wards_placed_)
+    : kills{kills_}
+    , assists{assists_}
+    , deaths{deaths_}
+    , lane{std::move(lane_)}
+    , summoner_id{std::move(summoner_id_)}
+    , champion_id{champion_id_}
+    , champion_name{std::move(champion_name_)}
+    , team_position{std::move(team_position_)}
+    , gold_earned{gold_earned_}
+    , total_damage_dealt{total_damage_dealt_}
+    , total_damage_dealt_to_champions{total_damage_dealt_to_champions_}
+    , total_damage_taken{total_damage_taken_}
+    , total_minions_killed{total_minions_killed_}
+    , vision_score{vision_score_}
+    , vision_wards_bought_in_game{vision_wards_bought_in_game_}
+    , wards_killed{wards_killed_}
+    , wards_placed{wards_placed_}
+{
+}
+
 LolApi::Match::Match(const std::size_t game_creation_, const std::size_t game_duration_,
-                     const std::size_t game_endTimestamp_, const std::size_t game_id_) noexcept
+                     const std::size_t game_endTimestamp_, const std::size_t game_id_,
+                     std::vector<LolApi::Match::Participant> participants_)
     : game_creation(game_creation_)
     , game_duration(game_duration_)
     , game_endTimestamp(game_endTimestamp_)
     , game_id(game_id_)
+    , participants(std::move(participants_))
 {
 }
 

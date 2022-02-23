@@ -48,7 +48,8 @@ template <class T>
 Result<std::tuple<T>> parseSimpleObject(const web::json::object& object, const utility::string_t& name)
 {
     return expected_task::from_optional(Algorithms::mapFind(object, name), U("Unable to find ") + name)
-        .and_then(&cast<T>);
+        .and_then(&cast<T>)
+        .map_error([name](std::wstring error) { return L"error with " + name + L" : " + error; });
 }
 
 template <class TYPE1, class... TYPES, class... STRS>
