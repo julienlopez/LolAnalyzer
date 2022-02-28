@@ -70,6 +70,13 @@ public:
         std::vector<LolApi::Match::Participant> participants;
     };
 
+    struct MatchDetailForSummoner
+    {
+        std::size_t game_id;
+        std::size_t game_duration;
+        Match::Participant details;
+    };
+
     LolApi(utility::string_t api_key);
 
     LolApi(const LolApi&) = delete;
@@ -83,11 +90,14 @@ public:
     LibRest::ExpectedTask<Summoner> requestSummonerByName(const utility::string_t& region,
                                                           const utility::string_t& summoner_name) const;
 
-    LibRest::ExpectedTask<std::vector<utility::string_t>> requestMatchlist(const utility::string_t& region,
+    LibRest::ExpectedTask<std::vector<utility::string_t>> requestMatchList(const utility::string_t& region,
                                                                            const utility::string_t& summoner_id,
                                                                            const MatchListOptions& options = {}) const;
 
     LibRest::ExpectedTask<Match> requestMatch(const utility::string_t& region, const utility::string_t& match_id) const;
+
+    LibRest::ExpectedTask<std::vector<MatchDetailForSummoner>>
+    findMatchDetailsForSummoner(const Summoner& summoner) const;
 
 private:
     const utility::string_t m_api_key;

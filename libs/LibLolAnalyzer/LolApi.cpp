@@ -8,6 +8,8 @@
 
 #include <cpprest/http_client.h>
 
+#include <expected_task/when_all.hpp>
+
 namespace LibRest::JsonParser
 {
 
@@ -16,9 +18,9 @@ LibRest::Result<LibLolAnalyzer::LolApi::Match::Participant> inline cast<LibLolAn
     const web::json::value& value)
 {
     return LibRest::JsonParser::parseSimpleObject<std::size_t, std::size_t, std::size_t, utility::string_t,
-                                                  utility::string_t, std::size_t, utility::string_t,
-                                                  utility::string_t, std::size_t, std::size_t, std::size_t, std::size_t,
-                                                  std::size_t, std::size_t, std::size_t, std::size_t, std::size_t>(
+                                                  utility::string_t, std::size_t, utility::string_t, utility::string_t,
+                                                  std::size_t, std::size_t, std::size_t, std::size_t, std::size_t,
+                                                  std::size_t, std::size_t, std::size_t, std::size_t>(
                value, U("kills"), U("assists"), U("deaths"), U("lane"), U("summonerId"), U("championId"),
                U("championName"), U("teamPosition"), U("goldEarned"), U("totalDamageDealt"),
                U("totalDamageDealtToChampions"), U("totalDamageTaken"), U("totalMinionsKilled"), U("visionScore"),
@@ -106,6 +108,33 @@ namespace
         return parseMatchInfo(it->second);
     }
 
+    auto isParticipant(const utility::string_t& summoner_puuid)
+    {
+        return [&summoner_puuid](const LolApi::Match::Participant& part) -> bool
+        { return part.summoner_id == summoner_puuid; };
+    }
+
+    auto extractMatchDetailForSummoner(const utility::string_t& summoner_puuid)
+    {
+        return [&](const LolApi::Match& match) -> LolApi::MatchDetailForSummoner
+        {
+            const auto it = std::ranges::find_if(match.participants, isParticipant(summoner_puuid));
+            assert(it != end(match.participants));
+            return {.game_id = match.game_id, .game_duration = match.game_duration, .details = *it};
+        };
+    }
+
+    auto extractParticipantData(const utility::string_t& summoner_puuid)
+    {
+        return
+            [summoner_puuid](const std::vector<LolApi::Match>& matches) -> std::vector<LolApi::MatchDetailForSummoner>
+        {
+            std::vector<LolApi::MatchDetailForSummoner> res;
+            std::ranges::transform(matches, std::back_inserter(res), extractMatchDetailForSummoner(summoner_puuid));
+            return res;
+        };
+    }
+
 } // namespace
 
 LolApi::Match::Participant::Participant(const std::size_t kills_, const std::size_t assists_, const std::size_t deaths_,
@@ -159,7 +188,7 @@ LibRest::ExpectedTask<Summoner> LolApi::requestSummonerByName(const utility::str
     return requestAPI(region, U("/summoner/v4/summoners/by-name/") + summoner_name, m_api_key).and_then(&parseSummoner);
 }
 
-LibRest::ExpectedTask<std::vector<utility::string_t>> LolApi::requestMatchlist(const utility::string_t& region,
+LibRest::ExpectedTask<std::vector<utility::string_t>> LolApi::requestMatchList(const utility::string_t& region,
                                                                                const utility::string_t& summoner_puuid,
                                                                                const MatchListOptions& options) const
 {
@@ -174,6 +203,21 @@ auto LolApi::requestMatch(const utility::string_t& region, const utility::string
 {
     ucout << U("LolApi::requestMatch(") << match_id << U(")\n");
     return requestAPI(region, U("/match/v5/matches/") + match_id, m_api_key).and_then(&parseMatch);
+}
+
+auto LolApi::findMatchDetailsForSummoner(const Summoner& summoner) const
+    -> LibRest::ExpectedTask<std::vector<MatchDetailForSummoner>>
+{
+    return requestMatchList(U("europe"), summoner.puuid(), {.type = utility::string_t{U("ranked")}, .count = 10})
+        .and_then(
+            [this](const std::vector<utility::string_t>& matches)
+            {
+                std::vector<expected_task::expected_task<LolApi::Match>> tasks;
+                for(const auto match : matches)
+                    tasks.push_back(requestMatch(U("europe"), match));
+                return expected_task::when_all(tasks);
+            })
+        .then_map(extractParticipantData(summoner.id()));
 }
 
 } // namespace LibLolAnalyzer
