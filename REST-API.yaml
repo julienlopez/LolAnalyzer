@@ -1,0 +1,94 @@
+openapi: 3.0.0
+servers: []
+info:
+  description: REST API for the LolAnalyzer server
+  version: 1.0.0
+  title: LolAnalyzer REST API
+paths:
+  /analyze/{region}/{summoner_name}:
+    get:
+      parameters:
+        - name : 'region'
+          in: path
+          required: true
+          schema:
+            type: string
+            default: euw1
+        - name : 'user_name'
+          in: path
+          required: true
+          schema:
+            type: string
+        - name : 'type'
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ranked, normal]
+          
+      responses:
+        '200':
+          description: a response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  schema:
+                  $ref: '#/components/schemas/MatchDetailForSummoner'
+        '500':
+          description: an error occured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+components:
+  schemas:
+    GenericError:
+      type: object
+      properties:
+        error_message:
+          type: string
+          example: Critical server error.
+    MatchDetailForSummoner:
+      type: object
+      properties:
+        match_id:
+          type: integer
+        match_duration:
+          type: integer
+        kills:
+          type: integer
+        assists:
+          type: integer
+        deaths:
+          type: integer
+        lane:
+          type: string
+        summoner_id:
+          type: string
+        champion_id:
+          type: integer
+        champion_name:
+          type: string
+        team_position:
+          type: string
+        gold_earned:
+          type: integer
+        total_damage_dealt:
+          type: integer
+        total_damage_dealt_to_champions:
+          type: integer
+        total_damage_taken:
+          type: integer
+        total_minions_killed:
+          type: integer
+        vision_score:
+          type: integer
+        vision_wards_bought_in_game:
+          type: integer
+        wards_killed:
+          type: integer
+        wards_placed:
+          type: integer
