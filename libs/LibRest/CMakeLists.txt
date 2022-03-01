@@ -2,8 +2,8 @@ set(LIBRARY_TARGET_NAME LibRest)
 
 set(LIB_ROOT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/")
 
-file(GLOB_RECURSE ${LIBRARY_TARGET_NAME}_HDR "./ExpectedTask.hpp" "./JsonParser.hpp" "./Result.hpp" "./Utils.hpp")
-file(GLOB_RECURSE ${LIBRARY_TARGET_NAME}_SRC "./Utils.cpp")
+file(GLOB_RECURSE ${LIBRARY_TARGET_NAME}_HDR "./ExpectedTask.hpp" "./JsonParser.hpp" "./Result.hpp" "./Utils.hpp" "./RequestSplitter.hpp")
+file(GLOB_RECURSE ${LIBRARY_TARGET_NAME}_SRC "./Utils.cpp" "./RequestSplitter.cpp")
 
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_HDR} ${${LIBRARY_TARGET_NAME}_SRC})
 
