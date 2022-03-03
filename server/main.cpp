@@ -3,17 +3,16 @@
 
 #include "RestServer.hpp"
 
-// using namespace web;
-// using namespace http;
-// using namespace utility;
+#include "LolApi.hpp"
 
-std::unique_ptr<RestServer> on_initialize(const utility::string_t& address)
+#include <cpprest/uri_builder.h>
+
+std::unique_ptr<RestServer> on_initialize(LibLolAnalyzer::LolApi& api, const utility::string_t& address)
 {
-
     web::uri_builder uri(address);
 
     auto addr = uri.to_uri().to_string();
-    auto server = std::make_unique<RestServer>(addr);
+    auto server = std::make_unique<RestServer>(std::ref(api), std::move(addr));
     server->open().wait();
 
     ucout << utility::string_t(U("Listening for requests at: ")) << addr << std::endl;
@@ -27,16 +26,23 @@ int wmain(int argc, wchar_t* argv[])
 int main(int argc, char* argv[])
 #endif
 {
-    utility::string_t port = U("34568");
-    if(argc == 2)
+
+    if(argc != 2 && argc != 3)
     {
-        port = argv[1];
+        std::wcerr << "expected usage : LolAnalyzerServer <api_token> <port>\n";
+        return 1;
+    }
+    utility::string_t port = U("8080");
+    if(argc == 3)
+    {
+        port = argv[2];
     }
 
+    LibLolAnalyzer::LolApi api(std::wstring{argv[1]});
     utility::string_t address = U("http://127.0.0.1:");
     address.append(port);
 
-    auto server = on_initialize(address);
+    auto server = on_initialize(api, address);
     std::cout << "Press ENTER to exit." << std::endl;
 
     std::string line;

@@ -1,22 +1,32 @@
 #pragma once
 
-#include <cpprest/http_listener.h>
+#include <memory>
+
+#include <cpprest/details/basic_types.h>
+
+#include <pplx/pplxtasks.h>
+
+namespace LibLolAnalyzer
+{
+class LolApi;
+}
+
+namespace Impl
+{
+class RestServer;
+}
 
 class RestServer
 {
 public:
-    RestServer(utility::string_t url);
-    
-    ~RestServer() = default;
+    RestServer(LibLolAnalyzer::LolApi& api, utility::string_t url);
+
+    ~RestServer();
 
     pplx::task<void> open();
 
     pplx::task<void> close();
 
 private:
-    web::http::experimental::listener::http_listener m_listener;
-
-    void handle_get(web::http::http_request message);
-
-    void handle_error(pplx::task<void>& t);
+    std::unique_ptr<Impl::RestServer> m_pimpl;
 };
