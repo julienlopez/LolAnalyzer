@@ -6,7 +6,7 @@ find_package(Catch2)
 
 add_executable(
   ${EXE_TARGET_NAME}
-  "main.cpp")
+  "main.cpp" "test_request_splitter.cpp")
 
 target_link_libraries(${EXE_TARGET_NAME}
 	PRIVATE

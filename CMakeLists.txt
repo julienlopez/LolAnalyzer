@@ -67,6 +67,7 @@ include_directories(SYSTEM 3rd_party/higherorderfunctions/include)
 
 add_subdirectory(libs)
 add_subdirectory(exe)
+add_subdirectory(server)
 
 if(ENABLE_TESTING)
     enable_testing()
